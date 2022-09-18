@@ -1,5 +1,7 @@
 const {UserData} = require('../models/models');
 const ApiError = require('../error/ApiError')
+const uuid = require("uuid");
+const path = require("path");
 
 class userDataController {
     async getOne(req, res) {
@@ -9,7 +11,7 @@ class userDataController {
     }
     async setDefaultData(req, res) {
         const {id} = req.query;
-        const data = await UserData.create({user_id: id, date_birth: '', status: '', city: ''})
+        const data = await UserData.create({user_id: id, date_birth: '', status: '', city: '', image: 'none', panoramaImage: 'none'})
         return res.json(data);
     }
     async updateStatus(req, res) {
@@ -26,6 +28,32 @@ class userDataController {
         const {city, id} = req.body;
         const updatedRow = await UserData.update({city}, {where: { user_id: id }});
         return res.json(updatedRow)
+    }
+    async updateImage(req, res) {
+        const {id} = req.body;
+        try {
+            const {img} = req.files;
+            let fileName = uuid.v4() + '.jpg';
+            img.mv(path.resolve(__dirname, '..', 'static', fileName))
+            const updatedRow = await UserData.update({image: fileName}, {where: { user_id: id }});
+            return res.json(updatedRow)
+        }
+        catch (e) {
+            return res.json('Ошибка' + e.message)
+        }
+    }
+    async updatePanoramaImage(req, res) {
+        const {id} = req.body;
+        try {
+            const {img} = req.files;
+            let fileName = uuid.v4() + '.jpg';
+            img.mv(path.resolve(__dirname, '..', 'static', fileName))
+            const updatedRow = await UserData.update({panoramaImage: fileName}, {where: { user_id: id }});
+            return res.json(updatedRow)
+        }
+        catch (e) {
+            return res.json('Ошибка' + e.message)
+        }
     }
 }
 

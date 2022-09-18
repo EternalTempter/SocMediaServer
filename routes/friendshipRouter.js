@@ -5,6 +5,8 @@ const router = new Router();
 router.get('/getAllFriends', friendshipController.getAllFriends);
 router.get('/getAllNotifications', friendshipController.getAllNotifications);
 router.get('/getAllSubscribers', friendshipController.getAllSubscribers);
+router.get('/getUserSubscribersCount', friendshipController.getUserSubscribersCount);
+router.get('/getUserFriendsCount', friendshipController.getUserFriendsCount);
 router.post('/sendFriendRequest', friendshipController.sendFriendRequest);
 router.put('/acceptFriendRequest', friendshipController.acceptFriendRequest);
 router.put('/rejectFriendRequest', friendshipController.rejectFriendRequest);

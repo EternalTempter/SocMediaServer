@@ -18,6 +18,11 @@ class groupUsersController {
         const group = await GroupUsers.destroy({where: {group_id: group_id, user_id: id}});
         return res.json(group);
     }
+    async getUserGroupSubsCount(req, res) {
+        const {id} = req.query;
+        const count = await GroupUsers.count({where: {user_id: id}})
+        return res.json(count);
+    }
 }
 
 module.exports = new groupUsersController();

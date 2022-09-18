@@ -5,7 +5,7 @@ const { Friendship } = require('../models/models');
 class FriendshipController {
     async getAllFriends(req, res) {
         const {id} = req.query;
-        const friends = await Friendship.findAll({where: {[Op.and]: [{profile_to: id}, {status: 'ACCEPTED'}]}})
+        const friends = await Friendship.findAll({where: {[Op.or]: [{[Op.and]: [{profile_to: id}, {status: 'ACCEPTED'}]}, {[Op.and]: [{profile_from: id}, {status: 'ACCEPTED'}]}]}})
         return res.json(friends);
     }
     async getAllNotifications(req, res) {
@@ -42,6 +42,16 @@ class FriendshipController {
         const {profile_from, profile_to} = req.body;
         const friendRequest = await Friendship.destroy({where: {[Op.and]: [{profile_from}, {profile_to}, {status: 'PENDING'}]}}) 
         return res.json(friendRequest);
+    }
+    async getUserSubscribersCount(req, res) {
+        const {id} = req.query;
+        const subs = await Friendship.count({where: {[Op.and]: [{[Op.or]: [{profile_from: id}, {profile_to: id}]}, {status: 'PENDING'}]}});
+        return res.json(subs);
+    }
+    async getUserFriendsCount(req, res) {
+        const {id} = req.query;
+        const subs = await Friendship.count({where: {[Op.and]: [{[Op.or]: [{profile_from: id}, {profile_to: id}]}, {status: 'ACCEPTED'}]}});
+        return res.json(subs);
     }
 }
 

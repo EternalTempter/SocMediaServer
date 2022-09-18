@@ -62,6 +62,11 @@ class UserController {
         const users = await Users.findAll({where:{[Op.or]: {name: {[Op.substring]: queryParameter}}, surname: {[Op.substring]: queryParameter}}})
         return res.json(users);
     }
+    async getAll(req, res) {
+        let limit = 20; 
+        const users = await Users.findAll({limit});
+        return res.json(users);
+    }
 }
 
 module.exports = new UserController();

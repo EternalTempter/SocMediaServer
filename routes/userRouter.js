@@ -8,5 +8,6 @@ router.post('/login', userController.login);
 router.get('/auth', authMiddleware, userController.check);
 router.get('/getByEmail', userController.getByEmail);
 router.get('/findAllByName', userController.findAllByName)
+router.get('/getAll', userController.getAll)
 
 module.exports = router;

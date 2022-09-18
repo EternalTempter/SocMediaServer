@@ -4,6 +4,7 @@ const router = new Router();
 
 router.get('/getAllSubscribers', groupUsersController.getAllSubscribers);
 router.get('/subscribe', groupUsersController.subscribe);
+router.get('/getUserGroupSubsCount', groupUsersController.getUserGroupSubsCount);
 router.delete('/unsubscribe', groupUsersController.unsubscribe)
 
 module.exports = router;

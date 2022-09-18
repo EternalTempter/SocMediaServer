@@ -41,6 +41,8 @@ const Post = sequelize.define('post', {
 const UserData = sequelize.define('userData', {
     id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
     user_id: {type: DataTypes.STRING},
+    image: {type: DataTypes.STRING},
+    panoramaImage: {type: DataTypes.STRING},
     date_birth: {type: DataTypes.STRING},
     status: {type: DataTypes.STRING},
     city: {type: DataTypes.STRING}, 
@@ -74,6 +76,13 @@ const Comments = sequelize.define('comments', {
     likes_amount: {type: DataTypes.INTEGER}
 })
 
+const Likes = sequelize.define('likes', {
+    id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
+    type: {type: DataTypes.STRING},
+    post_id: {type: DataTypes.STRING},
+    user_id: {type: DataTypes.STRING}
+})
+
 module.exports = {
     Users, 
     Messages, 
@@ -83,5 +92,6 @@ module.exports = {
     Friendship,
     Group,
     GroupUsers,
-    Comments
+    Comments,
+    Likes
 }

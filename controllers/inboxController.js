@@ -5,11 +5,14 @@ const { Op } = require("sequelize")
 
 class InboxController {
     async get(req, res) {
-        const {id} = req.query
+        let {id, limit, page} = req.query
+        page = page || 1;
+        limit = limit || 15;
+        let offset = page * limit - limit; 
         if(!id) {
             return next(ApiError.internal('Не указан обязательный get параметр id')) 
         }
-        const inbox = await Inbox.findAll({where:{[Op.or]: [{inbox_holder_user_id: id}, {inbox_sender_user_id: id}]}})
+        const inbox = await Inbox.findAndCountAll({where:{[Op.or]: [{inbox_holder_user_id: id}, {inbox_sender_user_id: id}]}, limit, offset})
         if(!inbox) {
             return next(ApiError.internal('Инбоксов по такому айди не существует')) 
         }

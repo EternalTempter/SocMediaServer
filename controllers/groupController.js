@@ -24,6 +24,10 @@ class groupController {
         const group = await Group.findOne({where: {id: id}})
         return res.json(group);
     }
+    async getAll(req, res) {
+        const groups = await Group.findAll({limit: 10});
+        return res.json(groups);
+    }
 }
 
 module.exports = new groupController();
