@@ -59,7 +59,10 @@ const Group = sequelize.define('group', {
     id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
     group_name: {type: DataTypes.STRING},
     image: {type: DataTypes.STRING},
+    panoramaImage: {type: DataTypes.STRING},
+    type: {type: DataTypes.STRING},
     description: {type: DataTypes.STRING},
+    owner_id: {type: DataTypes.STRING},
 })
 
 const GroupUsers = sequelize.define('groupUsers', {

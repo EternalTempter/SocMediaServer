@@ -4,7 +4,7 @@ const {Inbox, Users} = require('../models/models')
 const { Op } = require("sequelize")
 
 class InboxController {
-    async get(req, res) {
+    async get(req, res, next) {
         let {id, limit, page} = req.query
         page = page || 1;
         limit = limit || 15;
@@ -18,7 +18,7 @@ class InboxController {
         }
         return res.json(inbox)
     }
-    async create(req, res) {
+    async create(req, res, next) {
         const {last_message, last_message_user_id, inbox_holder_user_id, inbox_sender_user_id} = req.body
         if(!last_message || !last_message_user_id || !inbox_holder_user_id || !inbox_sender_user_id) {
             return next(ApiError.internal('Не указано одно из обязательных полей')) 
@@ -26,13 +26,19 @@ class InboxController {
         const inbox = await Inbox.create({last_message, last_message_user_id, inbox_holder_user_id, inbox_sender_user_id})
         return res.json(inbox)
     }
-    async updateLastMessage(req, res) {
+    async updateLastMessage(req, res, next) {
         const {last_message_user_id, last_message, id} = req.body;
+        if(!last_message_user_id || !last_message || !id) {
+            return next(ApiError.badRequest('Не задано одно из обязательных полей'));
+        }
         const updatedRows = await Inbox.update({last_message_user_id, last_message}, {where: { id: id }});
         return res.json(updatedRows)
     }
-    async getInbox(req, res) {
+    async getInbox(req, res, next) {
         const {firstUserId, secondUserId} = req.query;
+        if(!firstUserId || !secondUserId) {
+            return next(ApiError.badRequest('Не задано одно из обязательных полей'));
+        }
         const inbox = await Inbox.findOne({where: {[Op.or]: [{[Op.and]: [{inbox_holder_user_id: firstUserId}, {inbox_sender_user_id: secondUserId}]}, {[Op.and]: [{inbox_sender_user_id: firstUserId}, {inbox_holder_user_id: secondUserId}]}]}});
         return res.json(inbox);
     }

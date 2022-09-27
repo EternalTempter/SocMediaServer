@@ -5,8 +5,11 @@ const uuid = require("uuid");
 const path = require("path");
 
 class PostController {
-    async create(req, res) {
+    async create(req, res, next) {
         const {post_handler_type, post_handler_id, description} = req.body;
+        if(!post_handler_type || !post_handler_id || !description) {
+            return next(ApiError.badRequest('Не задано одно из обязательных полей'));
+        }
         try {
             const {img} = req.files;
             let fileName = uuid.v4() + '.jpg';
@@ -45,94 +48,152 @@ class PostController {
         const posts = await Post.findAndCountAll({limit, offset});
         return res.json(posts);
     }
-    async getAllFriendsPosts(req, res) {
+    async getAllFriendsPosts(req, res, next) {
         const {id, friendsArray} = req.query;
+        if(!id || !friendsArray) {
+            return next(ApiError.badRequest('Не задано одно из обязательных полей'));
+        }
         const posts = await Post.findAll({where: {post_handler_id: JSON.parse(friendsArray)}})
         return res.json(posts)
     }
-    async getAllLikes(req, res) {
+    async getAllLikes(req, res, next) {
         const {id} = req.query;
+        if(!id) {
+            return next(ApiError.badRequest('Не задано обязательное поле'));
+        }
         const likes = await Likes.findAll({where: {user_id: id, type: 'POST_LIKE'}})
         return res.json(likes)
     }
-    async getAllLikedPosts(req, res) {
+    async getAllLikedPosts(req, res, next) {
         const {id, likesArray} = req.query;
+        if(!id || !likesArray) {
+            return next(ApiError.badRequest('Не задано одно из обязательных полей'));
+        }
         const posts = await Post.findAll({where: {id: JSON.parse(likesArray)}})
         return res.json(posts)
     }
-    async setLike(req, res) {
+    async setLike(req, res, next) {
         const {id, user_id} = req.body
+        if(!id || !user_id) {
+            return next(ApiError.badRequest('Не задано одно из обязательных полей'));
+        }
         const updatedLikes = await Post.increment({likes_amount: 1}, {where: {id: id}})
         await Likes.create({post_id: id, user_id: user_id, type: 'POST_LIKE'})
         return res.json(updatedLikes)
     }
-    async removeLike(req, res) {
+    async removeLike(req, res, next) {
         const {id, user_id, type} = req.body
+        if(!id || !user_id || !type) {
+            return next(ApiError.badRequest('Не задано одно из обязательных полей'));
+        }
         const updatedLikes = await Post.decrement({likes_amount: 1}, {where: {id: id}})
         await Likes.destroy({where: {post_id: id, user_id: user_id, type: type}})
         return res.json(updatedLikes)
     }
-    async getBestComment(req, res) {
+    async getBestComment(req, res, next) {
         const {id} = req.query
-        // const bestComment = await Comments.findAll({where: {post_id: id}})
+        if(!id) {
+            return next(ApiError.badRequest('Не задано обязательное поле'));
+        }
         const bestComment = await Comments.findAll({where: {post_id: id}}, { group: 'likes_amount'})
         return res.json(bestComment.pop());
     }
-    async pasteComment(req, res) {
+    async pasteComment(req, res, next) {
         const {post_id, user_id, comment} = req.body;
+        if(!post_id || !user_id || !comment) {
+            return next(ApiError.badRequest('Не задано одно из обязательных полей'));
+        }
         const createdComment = await Comments.create({post_id: post_id, user_id: user_id, comment: comment, likes_amount: 0})
         await Post.increment({comments_amount: 1}, {where: {id: post_id}})
         return res.json(createdComment) 
     }
-    async setLikeToComment(req, res) {
+    async setLikeToComment(req, res, next) {
         const {id, user_id} = req.body;
+        if(!id || !user_id) {
+            return next(ApiError.badRequest('Не задано одно из обязательных полей'));
+        }
         const updatedComment = await Comments.increment({likes_amount: 1}, {where: {id: id}})
         await Likes.create({post_id: id, user_id: user_id, type: 'COMMENT_LIKE'})
         return res.json(updatedComment) 
     }
-    async removeLikeFromComment(req, res) {
+    async removeLikeFromComment(req, res, next) {
         const {id, user_id, type} = req.body;
+        if(!id || !user_id || !type) {
+            return next(ApiError.badRequest('Не задано одно из обязательных полей'));
+        }
         const updatedComment = await Comments.decrement({likes_amount: 1}, {where: {id: id}})
         await Likes.destroy({where: {post_id: id, user_id: user_id, type: type}})
         return res.json(updatedComment) 
     }
-    async getAllComments(req, res) {
+    async getAllComments(req, res, next) {
         const {post_id} = req.query;
+        if(!post_id) {
+            return next(ApiError.badRequest('Не задано обязательное поле'));
+        }
         const comments = await Comments.findAll({where: {post_id: post_id}})
         return res.json(comments) 
     }
-    async getAllUserPosts(req, res) {
+    async getAllUserPosts(req, res, next) {
         let {id, limit, page} = req.query;
+        if(!id) {
+            return next(ApiError.badRequest('Не задано обязательное поле'));
+        }
         limit = limit || 5
         page = page || 1
         let offset = page * limit - limit
         const posts = await Post.findAndCountAll({where: {[Op.and]: [{post_handler_type: 'USER'}, {post_handler_id: id}]}, limit, offset}) 
         return res.json(posts);
     }
-    async isPostLiked(req, res) {
+    async isPostLiked(req, res, next) {
         const {user_id, post_id} = req.query;
+        if(!user_id || !post_id) {
+            return next(ApiError.badRequest('Не задано одно из обязательных полей'));
+        }
         const likedPost = await Likes.findOne({where: {user_id: user_id, post_id: post_id, type: 'POST_LIKE'}})
         return res.json(likedPost !== null);
     }
-    async isCommentLiked(req, res) {
+    async isCommentLiked(req, res, next) {
         const {user_id, comment_id} = req.query;
+        if(!user_id || !comment_id) {
+            return next(ApiError.badRequest('Не задано одно из обязательных полей'));
+        }
         const likedComment = await Likes.findOne({where: {user_id: user_id, post_id: comment_id, type: 'COMMENT_LIKE'}})
         return res.json(likedComment !== null);
     }
-    async updateViewsCount(req, res) {
+    async updateViewsCount(req, res, next) {
         const {post_id} = req.body;
+        if(!post_id) {
+            return next(ApiError.badRequest('Не задано обязательное поле'));
+        }
         const updatedPostViews = Post.increment({views_amount: 1}, {where: {id: post_id}});
         return res.json(updatedPostViews);
     }
-    async findByDescription(req, res) {
+    async findByDescription(req, res, next) {
         const {description, user_id} = req.query;
+        if(!description || !user_id) {
+            return next(ApiError.badRequest('Не задано одно из обязательных полей'));
+        }
         const posts = await Post.findAll({where: {description: {[Op.substring]: description}, post_handler_id: user_id}})
         return res.json(posts);
     }
-    async getUserPostsCount(req, res) {
+    async getUserPostsCount(req, res, next) {
         const {id} = req.query;
+        if(!id) {
+            return next(ApiError.badRequest('Не задано обязательное поле'));
+        }
         const count = await Post.count({where: {post_handler_id: id}})
         return res.json(count);
+    }
+    async getAllGroupPosts(req, res, next) {
+        let {id, limit, page} = req.query;
+        if(!id) {
+            return next(ApiError.badRequest('Не задано обязательное поле'));
+        }
+        limit = limit || 5
+        page = page || 1
+        let offset = page * limit - limit
+        const posts = await Post.findAndCountAll({where: {[Op.and]: [{post_handler_type: 'GROUP'}, {post_handler_id: id}]}, limit, offset}) 
+        return res.json(posts);
     }
 }
 
