@@ -35,6 +35,14 @@ class groupUsersController {
         const count = await GroupUsers.count({where: {user_id: id}})
         return res.json(count);
     }
+    async getGroupSubsCount(req, res, next) {
+        const {group_id} = req.query;
+        if(!group_id) {
+            return next(ApiError.badRequest('Не задано обязательное поле'));
+        }
+        const count = await GroupUsers.count({where: {group_id: group_id}})
+        return res.json(count);
+    }
 }
 
 module.exports = new groupUsersController();
