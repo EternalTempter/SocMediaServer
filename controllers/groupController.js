@@ -1,5 +1,5 @@
 const ApiError = require('../error/ApiError')
-const {Group, GroupUsers} = require('../models/models')
+const {Group, GroupUsers, Post} = require('../models/models')
 const { Op } = require("sequelize");
 const uuid = require("uuid");
 const path = require("path");
@@ -34,6 +34,7 @@ class groupController {
                 description: description,
                 owner_id: owner_id
             });
+            await GroupUsers.create({group_id: group.id, user_id: owner_id})
             return res.json(group);
         }
         catch(e) {
@@ -45,6 +46,7 @@ class groupController {
                 description: description,
                 owner_id: owner_id
             });
+            await GroupUsers.create({group_id: group.id, user_id: owner_id})
             return res.json(group);
         }
     }
@@ -67,6 +69,16 @@ class groupController {
     async getAll(req, res) {
         const groups = await Group.findAll({limit: 10});
         return res.json(groups);
+    }
+    async deleteGroup(req, res, next) {
+        const {group_id} = req.body;
+        if(!group_id) {
+            return next(ApiError.badRequest('Не задано обязательное поле'));
+        } 
+        const group = await Group.destroy({where: {id: group_id}});
+        await GroupUsers.destroy({where: {group_id: group_id}})
+        await Post.destroy({where: {post_hadler_type: "GROUP", post_handler_id: group_id}})
+        return res.json(group);
     }
 }
 

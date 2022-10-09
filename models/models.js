@@ -16,6 +16,7 @@ const Messages = sequelize.define('messages', {
     outgoing_id: {type: DataTypes.STRING},
     incoming_id: {type: DataTypes.STRING},
     message: {type: DataTypes.STRING},
+    viewed: {type: DataTypes.BOOLEAN}
 });
 
 const Inbox = sequelize.define('inbox', {
@@ -24,6 +25,7 @@ const Inbox = sequelize.define('inbox', {
     last_message_user_id: {type: DataTypes.STRING},
     inbox_holder_user_id: {type: DataTypes.STRING},
     inbox_sender_user_id: {type: DataTypes.STRING},
+    viewed: {type: DataTypes.BOOLEAN}
 });
 
 const Post = sequelize.define('post', {

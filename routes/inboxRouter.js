@@ -6,5 +6,6 @@ router.get('/get', inboxController.get);
 router.get('/getInbox', inboxController.getInbox);
 router.post('/create', inboxController.create);
 router.put('/updateLastMessage', inboxController.updateLastMessage);
+router.put('/updateLastMessageView', inboxController.updateLastMessageView);
 
 module.exports = router;

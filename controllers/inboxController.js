@@ -23,7 +23,7 @@ class InboxController {
         if(!last_message || !last_message_user_id || !inbox_holder_user_id || !inbox_sender_user_id) {
             return next(ApiError.internal('Не указано одно из обязательных полей')) 
         }
-        const inbox = await Inbox.create({last_message, last_message_user_id, inbox_holder_user_id, inbox_sender_user_id})
+        const inbox = await Inbox.create({last_message, last_message_user_id, inbox_holder_user_id, inbox_sender_user_id, viewed: false})
         return res.json(inbox)
     }
     async updateLastMessage(req, res, next) {
@@ -31,8 +31,16 @@ class InboxController {
         if(!last_message_user_id || !last_message || !id) {
             return next(ApiError.badRequest('Не задано одно из обязательных полей'));
         }
-        const updatedRows = await Inbox.update({last_message_user_id, last_message}, {where: { id: id }});
+        const updatedRows = await Inbox.update({last_message_user_id, last_message, viewed: false}, {where: { id: id }});
         return res.json(updatedRows)
+    }
+    async updateLastMessageView(req, res, next) {
+        const {id} = req.body;
+        if(!id) {
+            return next(ApiError.badRequest('Не задано обязательное поле'));
+        }
+        const updatedMessage = await Inbox.update({viewed: true}, {where: {id: id}})
+        return res.json(updatedMessage)
     }
     async getInbox(req, res, next) {
         const {firstUserId, secondUserId} = req.query;

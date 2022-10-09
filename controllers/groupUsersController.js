@@ -1,4 +1,5 @@
 const uuid = require('uuid');
+const sequelize = require('sequelize');
 const ApiError = require('../error/ApiError')
 const {GroupUsers} = require('../models/models')
 
@@ -42,6 +43,14 @@ class groupUsersController {
         }
         const count = await GroupUsers.count({where: {group_id: group_id}})
         return res.json(count);
+    }
+    async getFirstGroupSubs(req, res, next) {
+        const {group_id, amount} = req.query;
+        if(!group_id || !amount) {
+            return next(ApiError.badRequest('Не задано одно из обязательных полей'));
+        }
+        const users = await GroupUsers.findAll({where: {group_id: group_id}, limit: amount});
+        return res.json(users);
     }
 }
 

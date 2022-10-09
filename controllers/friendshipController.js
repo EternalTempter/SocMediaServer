@@ -16,7 +16,13 @@ class FriendshipController {
         if(!id) {
             return next(ApiError.badRequest('Не задано обязательное поле'));
         }
-        const friends = await Friendship.findAll({where: {[Op.or]: [{[Op.and]: [{profile_to: id}, {status: 'PENDING'}]}, {[Op.and]: [{profile_from: id}, {status: 'PENDING'}]}]}})
+        const friends = await Friendship.findAll({
+            where: {
+                    [Op.or]: [
+                        {profile_to: id, [Op.or]: [{status: 'PENDING'}, {status: 'REJECTED'}]},
+                        {profile_from: id, [Op.or]: [{status: 'PENDING'}, {status: 'REJECTED'}]} 
+                    ],
+            }})
         return res.json(friends);
     }
     async getAllSubscribers(req, res, next) {
@@ -64,7 +70,7 @@ class FriendshipController {
         if(!profile_from || !profile_to) {
             return next(ApiError.badRequest('Не задано одно из обязательных полей'));
         }
-        const friendRequest = await Friendship.destroy({where: {[Op.and]: [{profile_from}, {profile_to}, {status: 'PENDING'}]}}) 
+        const friendRequest = await Friendship.destroy({where: {[Op.and]: [{profile_from}, {profile_to}, {[Op.or]: [{status: 'PENDING'}, {status: 'REJECTED'}]}]}}) 
         return res.json(friendRequest);
     }
     async getUserSubscribersCount(req, res, next) {

@@ -73,6 +73,14 @@ class UserController {
         const users = await Users.findAll({limit});
         return res.json(users);
     }
+    async changeUserRole(req, res, next) {
+        const {role, user_id} = req.body;
+        if(!role || !user_id) {
+            return next(ApiError.badRequest('Не задано одно из обязательных полей'))
+        }
+        const updatedUser = await Users.update({role}, {where: {email: user_id}})
+        return res.json(updatedUser);
+    }
 }
 
 module.exports = new UserController();

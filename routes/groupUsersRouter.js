@@ -6,6 +6,7 @@ router.get('/getAllSubscribers', groupUsersController.getAllSubscribers);
 router.get('/subscribe', groupUsersController.subscribe);
 router.get('/getUserGroupSubsCount', groupUsersController.getUserGroupSubsCount);
 router.get('/getGroupSubsCount', groupUsersController.getGroupSubsCount);
+router.get('/getFirstGroupSubs', groupUsersController.getFirstGroupSubs);
 router.delete('/unsubscribe', groupUsersController.unsubscribe)
 
 module.exports = router;

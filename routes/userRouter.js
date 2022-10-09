@@ -9,5 +9,6 @@ router.get('/auth', authMiddleware, userController.check);
 router.get('/getByEmail', userController.getByEmail);
 router.get('/findAllByName', userController.findAllByName)
 router.get('/getAll', userController.getAll)
+router.put('/changeUserRole', userController.changeUserRole);
 
 module.exports = router;

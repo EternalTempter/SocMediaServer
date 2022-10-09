@@ -45,7 +45,7 @@ class PostController {
         page = page || 1;
         limit = limit || 5;
         let offset = page * limit - limit; 
-        const posts = await Post.findAndCountAll({limit, offset});
+        const posts = await Post.findAndCountAll({limit, offset, order: [['id', 'DESC']]});
         return res.json(posts);
     }
     async getAllFriendsPosts(req, res, next) {
@@ -53,7 +53,11 @@ class PostController {
         if(!id || !friendsArray) {
             return next(ApiError.badRequest('Не задано одно из обязательных полей'));
         }
-        const posts = await Post.findAll({where: {post_handler_id: JSON.parse(friendsArray)}})
+        let {limit, page} = req.query;
+        page = page || 1;
+        limit = limit || 5;
+        let offset = page * limit - limit; 
+        const posts = await Post.findAndCountAll({where: {post_handler_id: JSON.parse(friendsArray)}, limit, offset, order: [['id', 'DESC']]})
         return res.json(posts)
     }
     async getAllLikes(req, res, next) {
@@ -69,7 +73,11 @@ class PostController {
         if(!id || !likesArray) {
             return next(ApiError.badRequest('Не задано одно из обязательных полей'));
         }
-        const posts = await Post.findAll({where: {id: JSON.parse(likesArray)}})
+        let {limit, page} = req.query;
+        page = page || 1;
+        limit = limit || 5;
+        let offset = page * limit - limit; 
+        const posts = await Post.findAndCountAll({where: {id: JSON.parse(likesArray)}, limit, offset, order: [['id', 'DESC']]})
         return res.json(posts)
     }
     async setLike(req, res, next) {
@@ -141,7 +149,7 @@ class PostController {
         limit = limit || 5
         page = page || 1
         let offset = page * limit - limit
-        const posts = await Post.findAndCountAll({where: {[Op.and]: [{post_handler_type: 'USER'}, {post_handler_id: id}]}, limit, offset}) 
+        const posts = await Post.findAndCountAll({where: {[Op.and]: [{post_handler_type: 'USER'}, {post_handler_id: id}]}, limit, offset, order: [['id', 'DESC']]}) 
         return res.json(posts);
     }
     async isPostLiked(req, res, next) {
@@ -194,6 +202,30 @@ class PostController {
         let offset = page * limit - limit
         const posts = await Post.findAndCountAll({where: {[Op.and]: [{post_handler_type: 'GROUP'}, {post_handler_id: id}]}, limit, offset}) 
         return res.json(posts);
+    }
+    async getAllUserCommentsCount(req, res, next) {
+        let {user_id} = req.query;
+        if(!user_id) {
+            return next(ApiError.badRequest('Не задано обязательное поле'));
+        }
+        const commentsCount = await Comments.count({where: {user_id: user_id}});
+        return res.json(commentsCount);
+    }
+    async getAllLikedPostsCount(req, res, next) {
+        let {user_id} = req.query;
+        if(!user_id) {
+            return next(ApiError.badRequest('Не задано обязательное поле'));
+        }
+        const likesCount = await Likes.count({where: {user_id: user_id}});
+        return res.json(likesCount);
+    }
+    async getUserMostLikedPostCount(req, res, next) {
+        let {user_id} = req.query;
+        if(!user_id) {
+            return next(ApiError.badRequest('Не задано обязательное поле'));
+        }
+        const mostLikedPostCount = await Post.max('likes_amount', {where: {post_handler_id: user_id}});
+        return res.json(mostLikedPostCount);
     }
 }
 
