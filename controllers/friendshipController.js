@@ -8,7 +8,11 @@ class FriendshipController {
         if(!id) {
             return next(ApiError.badRequest('Не задано обязательное поле'));
         }
-        const friends = await Friendship.findAll({where: {[Op.or]: [{[Op.and]: [{profile_to: id}, {status: 'ACCEPTED'}]}, {[Op.and]: [{profile_from: id}, {status: 'ACCEPTED'}]}]}})
+        let {limit, page} = req.query;
+        limit = limit || 10;
+        page = page || 1;
+        let offset = page * limit - limit; 
+        const friends = await Friendship.findAndCountAll({where: {[Op.or]: [{[Op.and]: [{profile_to: id}, {status: 'ACCEPTED'}]}, {[Op.and]: [{profile_from: id}, {status: 'ACCEPTED'}]}]}, limit, offset})
         return res.json(friends);
     }
     async getAllNotifications(req, res, next) {
@@ -62,7 +66,7 @@ class FriendshipController {
         if(!profile_from || !profile_to) {
             return next(ApiError.badRequest('Не задано одно из обязательных полей'));
         }
-        const friendRequest = await Friendship.destroy({where: {[Op.and]: [{profile_from}, {profile_to}, {status: 'ACCEPTED'}]}}) 
+        const friendRequest = await Friendship.destroy({where: {[Op.or]: [{profile_from: profile_from, profile_to: profile_to, status: 'ACCEPTED'}, {profile_from: profile_to, profile_to: profile_from, status: 'ACCEPTED'}]}}) 
         return res.json(friendRequest);
     }
     async deleteFriendRequest(req, res, next) {
@@ -78,7 +82,7 @@ class FriendshipController {
         if(!id) {
             return next(ApiError.badRequest('Не задано обязательное поле'));
         }
-        const subs = await Friendship.count({where: {[Op.and]: [{[Op.or]: [{profile_from: id}, {profile_to: id}]}, {status: 'PENDING'}]}});
+        const subs = await Friendship.count({where: {profile_to: id, status: 'PENDING'}});
         return res.json(subs);
     }
     async getUserFriendsCount(req, res, next) {

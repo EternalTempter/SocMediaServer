@@ -69,8 +69,20 @@ class UserController {
         return res.json(users);
     }
     async getAll(req, res) {
-        let limit = 20; 
-        const users = await Users.findAll({limit});
+        const {ids} = req.query;
+        if(!ids) {
+            return next(ApiError.badRequest('Не задано обязательное поле'));
+        }
+        let {limit, page} = req.query;
+        limit = limit || 10;
+        page = page || 1;
+        let offset = page * limit - limit; 
+        let users;
+        if(JSON.parse(ids).length > 0)
+            users = await Users.findAndCountAll({where: {[Op.not]: [{email: JSON.parse(ids)}]}, limit, offset});
+        else
+            users = await Users.findAndCountAll({limit, offset});
+
         return res.json(users);
     }
     async changeUserRole(req, res, next) {

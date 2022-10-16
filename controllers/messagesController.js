@@ -74,7 +74,7 @@ class MessagesController {
         return res.json(deletedMessage)
     }
     async getMessagesCount(req, res) {
-        let {firstUserId, secondUserId} = req.query;
+        const {firstUserId, secondUserId} = req.query;
         if(!firstUserId || !secondUserId) {
             return next(ApiError.badRequest('Не задано одно из обязательных полей'));
         }
@@ -97,12 +97,21 @@ class MessagesController {
         return res.json(messagesCount);
     }
     async getAllUserMessagesCount(req, res) {
-        let {user_id} = req.query;
+        const {user_id} = req.query;
         if(!user_id) {
             return next(ApiError.badRequest('Не задано обязательное поле'));
         }
         const messagesCount = await Messages.count({where: {[Op.or]: [{outgoing_id: user_id}, {incoming_id: user_id}]}});
         return res.json(messagesCount);
+    }
+    async checkForNewMessages(req, res, next) {
+        const {user_id} = req.query;
+        if(!user_id) {
+            return next(ApiError.badRequest('Не задано обязательное поле'));
+        }
+        const message = await Messages.findOne({where: {incoming_id: user_id, viewed: false}})
+        if(message) return res.json(true);
+        else return res.json(false);
     }
 }
 

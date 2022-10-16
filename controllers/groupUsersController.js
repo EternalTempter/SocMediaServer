@@ -52,6 +52,14 @@ class groupUsersController {
         const users = await GroupUsers.findAll({where: {group_id: group_id}, limit: amount});
         return res.json(users);
     }
+    async getGroupUser(req, res, next) {
+        const {group_id, user_id} = req.query;
+        if(!group_id || !user_id) {
+            return next(ApiError.badRequest('Не задано одно из обязательных полей'));
+        }
+        const user = await GroupUsers.findOne({where: {group_id: group_id, user_id: user_id}});
+        return res.json(user);
+    }
 }
 
 module.exports = new groupUsersController();

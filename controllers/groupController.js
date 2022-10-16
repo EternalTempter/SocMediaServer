@@ -1,5 +1,5 @@
 const ApiError = require('../error/ApiError')
-const {Group, GroupUsers, Post} = require('../models/models')
+const {Group, GroupUsers, Post, Likes} = require('../models/models')
 const { Op } = require("sequelize");
 const uuid = require("uuid");
 const path = require("path");
@@ -55,7 +55,11 @@ class groupController {
         if(!id) {
             return next(ApiError.badRequest('Не задано обязательное поле'));
         }
-        const groups = await GroupUsers.findAll({where: {user_id: id}})
+        let {limit, page} = req.query;
+        page = page || 1;
+        limit = limit || 15;
+        let offset = page * limit - limit; 
+        const groups = await GroupUsers.findAndCountAll({where: {user_id: id}, limit, offset})
         return res.json(groups);
     }
     async getById(req, res, next) {
@@ -67,7 +71,20 @@ class groupController {
         return res.json(group);
     }
     async getAll(req, res) {
-        const groups = await Group.findAll({limit: 10});
+        const {ids} = req.query;
+        if(!ids) {
+            return next(ApiError.badRequest('Не задано обязательное поле'));
+        }
+        let {limit, page} = req.query;
+        page = page || 1;
+        limit = limit || 15;
+        let offset = page * limit - limit; 
+        let groups;
+        if(JSON.parse(ids).length > 0)
+            groups = await Group.findAndCountAll({where: {[Op.not]: [{id: JSON.parse(ids)}]}, limit, offset});
+        else
+            groups = await Group.findAndCountAll({limit, offset});
+        
         return res.json(groups);
     }
     async deleteGroup(req, res, next) {
@@ -77,8 +94,48 @@ class groupController {
         } 
         const group = await Group.destroy({where: {id: group_id}});
         await GroupUsers.destroy({where: {group_id: group_id}})
-        await Post.destroy({where: {post_hadler_type: "GROUP", post_handler_id: group_id}})
+        await Post.destroy({where: {post_handler_type: "GROUP", post_handler_id: group_id}})
         return res.json(group);
+    }
+    async updateDescription(req, res, next) {
+        const {description, id} = req.body;
+        if(!description || !id) {
+            return next(ApiError.badRequest('Не задано одно из обязательных полей'));
+        }
+        const updatedRow = await Group.update({description}, {where: { id: id }});
+        return res.json(updatedRow)
+    }
+    async updateImage(req, res, next) {
+        const {id} = req.body;
+        if(!id) {
+            return next(ApiError.badRequest('Не задано обязательное поле'));
+        }
+        try {
+            const {img} = req.files;
+            let fileName = uuid.v4() + '.jpg';
+            img.mv(path.resolve(__dirname, '..', 'static', fileName))
+            const updatedRow = await Group.update({image: fileName}, {where: { id: id }});
+            return res.json(updatedRow)
+        }
+        catch (e) {
+            return res.json('Ошибка' + e.message)
+        }
+    }
+    async updatePanoramaImage(req, res, next) {
+        const {id} = req.body;
+        if(!id) {
+            return next(ApiError.badRequest('Не задано обязательное поле'));
+        }
+        try {
+            const {img} = req.files;
+            let fileName = uuid.v4() + '.jpg';
+            img.mv(path.resolve(__dirname, '..', 'static', fileName))
+            const updatedRow = await Group.update({panoramaImage: fileName}, {where: { id: id }});
+            return res.json(updatedRow)
+        }
+        catch (e) {
+            return res.json('Ошибка' + e.message)
+        }
     }
 }
 

@@ -200,7 +200,7 @@ class PostController {
         limit = limit || 5
         page = page || 1
         let offset = page * limit - limit
-        const posts = await Post.findAndCountAll({where: {[Op.and]: [{post_handler_type: 'GROUP'}, {post_handler_id: id}]}, limit, offset}) 
+        const posts = await Post.findAndCountAll({where: {[Op.and]: [{post_handler_type: 'GROUP'}, {post_handler_id: id}]}, limit, offset, order: [['id', 'DESC']]}) 
         return res.json(posts);
     }
     async getAllUserCommentsCount(req, res, next) {
@@ -226,6 +226,14 @@ class PostController {
         }
         const mostLikedPostCount = await Post.max('likes_amount', {where: {post_handler_id: user_id}});
         return res.json(mostLikedPostCount);
+    }
+    async getPostCommentsAmount(req, res, next) {
+        const {id} = req.query;
+        if(!id) {
+            return next(ApiError.badRequest('Не задано обязательное поле'));
+        }
+        const post = await Post.findOne({where: {id: id}})
+        return res.json(post.comments_amount);
     }
 }
 
