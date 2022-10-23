@@ -10,7 +10,7 @@ class groupController {
         if(!name) {
             return next(ApiError.badRequest('Не задано обязательное поле'));
         }
-        const groups = await Group.findAll({where: {group_name: {[Op.substring]: name}}})
+        const groups = await Group.findAll({where: {[Op.or]: [{group_name: {[Op.substring]: name.charAt(0).toUpperCase() + name.slice(1)}}, {group_name: {[Op.substring]: name}}]}})
         return res.json(groups);
     }
     async create(req, res, next) {

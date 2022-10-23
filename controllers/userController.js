@@ -65,7 +65,7 @@ class UserController {
         if(!queryParameter) {
             return next(ApiError.badRequest('Не задано обязательное поле'));
         }
-        const users = await Users.findAll({where:{[Op.or]: {name: {[Op.substring]: queryParameter}}, surname: {[Op.substring]: queryParameter}}})
+        const users = await Users.findAll({where:{[Op.or]: [{name: {[Op.substring]: queryParameter.charAt(0).toUpperCase() + queryParameter.slice(1)}}, {surname: {[Op.substring]: queryParameter.charAt(0).toUpperCase() + queryParameter.slice(1)}}]}})
         return res.json(users);
     }
     async getAll(req, res) {
