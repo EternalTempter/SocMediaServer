@@ -8,6 +8,7 @@ const userDataRouter = require('./userDataRouter');
 const friendshipRouter = require('./friendshipRouter');
 const groupRouter = require('./groupRouter')
 const groupUsersRouter = require('./groupUsersRouter')
+const newsRouter = require('./newsRouter')
 
 
 router.use('/user', userRouter);
@@ -18,5 +19,6 @@ router.use('/userData', userDataRouter);
 router.use('/friendship', friendshipRouter);
 router.use('/group', groupRouter);
 router.use('/groupUser', groupUsersRouter);
+router.use('/news', newsRouter);
 
 module.exports = router;

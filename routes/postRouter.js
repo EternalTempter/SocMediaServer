@@ -18,6 +18,8 @@ router.get('/getAllUserCommentsCount', postController.getAllUserCommentsCount)
 router.get('/getAllLikedPostsCount', postController.getAllLikedPostsCount)
 router.get('/getUserMostLikedPostCount', postController.getUserMostLikedPostCount)
 router.get('/getPostCommentsAmount', postController.getPostCommentsAmount)
+router.get('/getAllPostsCount', postController.getAllPostsCount)
+router.get('/getUserMostLikedComment', postController.getUserMostLikedComment)
 router.put('/setLike', postController.setLike)
 router.put('/setLikeToComment', postController.setLikeToComment)
 router.put('/removeLikeFromComment', postController.removeLikeFromComment)
@@ -25,5 +27,6 @@ router.put('/removeLike', postController.removeLike)
 router.put('/updateViewsCount', postController.updateViewsCount)
 router.post('/create', postController.create);
 router.post('/pasteComment', postController.pasteComment)
+router.delete('/deletePost', postController.deletePost)
   
 module.exports = router;

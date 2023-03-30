@@ -7,6 +7,8 @@ router.get('/getById', groupController.getById);
 router.get('/getAll', groupController.getAll);
 router.get('/getAllUserSubscriptions', groupController.getAllUserSubscriptions)
 router.put('/updateDescription', groupController.updateDescription)
+router.put('/updateName', groupController.updateName)
+router.put('/updateType', groupController.updateType)
 router.put('/updatePanoramaImage', groupController.updatePanoramaImage)
 router.put('/updateImage', groupController.updateImage)
 router.post('/create', groupController.create);

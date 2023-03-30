@@ -88,6 +88,14 @@ const Likes = sequelize.define('likes', {
     user_id: {type: DataTypes.STRING}
 })
 
+const News = sequelize.define('news', {
+    id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
+    image: {type: DataTypes.STRING},
+    label: {type: DataTypes.STRING},
+    description: {type: DataTypes.STRING},
+    time_spent: {type: DataTypes.STRING}
+})
+
 module.exports = {
     Users, 
     Messages, 
@@ -98,5 +106,6 @@ module.exports = {
     Group,
     GroupUsers,
     Comments,
-    Likes
+    Likes,
+    News
 }

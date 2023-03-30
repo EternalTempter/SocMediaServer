@@ -105,6 +105,22 @@ class groupController {
         const updatedRow = await Group.update({description}, {where: { id: id }});
         return res.json(updatedRow)
     }
+    async updateName(req, res, next) {
+        const {group_name, id} = req.body;
+        if(!group_name || !id) {
+            return next(ApiError.badRequest('Не задано одно из обязательных полей'));
+        }
+        const updatedRow = await Group.update({group_name}, {where: { id: id }});
+        return res.json(updatedRow)
+    }
+    async updateType(req, res, next) {
+        const {type, id} = req.body;
+        if(!type || !id) {
+            return next(ApiError.badRequest('Не задано одно из обязательных полей'));
+        }
+        const updatedRow = await Group.update({type}, {where: { id: id }});
+        return res.json(updatedRow)
+    }
     async updateImage(req, res, next) {
         const {id} = req.body;
         if(!id) {

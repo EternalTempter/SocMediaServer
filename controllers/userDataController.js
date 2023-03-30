@@ -1,4 +1,4 @@
-const {UserData} = require('../models/models');
+const {UserData, Users} = require('../models/models');
 const ApiError = require('../error/ApiError')
 const uuid = require("uuid");
 const path = require("path");
@@ -42,6 +42,22 @@ class userDataController {
             return next(ApiError.badRequest('Не задано одно из обязательных полей'));
         }
         const updatedRow = await UserData.update({city}, {where: { user_id: id }});
+        return res.json(updatedRow)
+    }
+    async updateName(req, res, next) {
+        const {name, id} = req.body;
+        if(!name || !id) {
+            return next(ApiError.badRequest('Не задано одно из обязательных полей'));
+        }
+        const updatedRow = await Users.update({name}, {where: { email: id }});
+        return res.json(updatedRow)
+    }
+    async updateSurname(req, res, next) {
+        const {surname, id} = req.body;
+        if(!surname || !id) {
+            return next(ApiError.badRequest('Не задано одно из обязательных полей'));
+        }
+        const updatedRow = await Users.update({surname}, {where: {email: id }});
         return res.json(updatedRow)
     }
     async updateImage(req, res, next) {

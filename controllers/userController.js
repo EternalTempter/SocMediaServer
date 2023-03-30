@@ -58,7 +58,7 @@ class UserController {
         if(!user) {
             return next(ApiError.internal('Пользователь не найден')) 
         }
-        return res.json({unique_id: user.unique_id, name: user.name, surname: user.surname, email: user.email, role: user.role, id: user.id});
+        return res.json({unique_id: user.unique_id, name: user.name, surname: user.surname, email: user.email, role: user.role, id: user.id, createdAt: user.createdAt});
     }
     async findAllByName(req, res, next) {
         const {queryParameter} = req.query;

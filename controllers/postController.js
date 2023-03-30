@@ -227,6 +227,15 @@ class PostController {
         const mostLikedPostCount = await Post.max('likes_amount', {where: {post_handler_id: user_id}});
         return res.json(mostLikedPostCount);
     }
+    async getUserMostLikedComment(req, res, next) {
+        let {user_id} = req.query;
+        if(!user_id) {
+            return next(ApiError.badRequest('Не задано обязательное поле'));
+        }
+        const mostLikedPostCount = await Comments.max('likes_amount', {where: {user_id: user_id}});
+        const mostLikedPost = await Comments.findOne({where: {user_id: user_id, likes_amount: mostLikedPostCount}});
+        return res.json(mostLikedPost);
+    }
     async getPostCommentsAmount(req, res, next) {
         const {id} = req.query;
         if(!id) {
@@ -234,6 +243,18 @@ class PostController {
         }
         const post = await Post.findOne({where: {id: id}})
         return res.json(post.comments_amount);
+    }
+    async deletePost(req, res, next) {
+        const {id} = req.body;
+        if(!id) {
+            return next(ApiError.badRequest('Не задано обязательное поле'));
+        }
+        const post = await Post.destroy({where: {id: id}})
+        return res.json(post);
+    }
+    async getAllPostsCount(req, res, next) {
+        const post = await Post.count({where: {}});
+        return res.json(post);
     }
 }
 
