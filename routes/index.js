@@ -9,6 +9,7 @@ const friendshipRouter = require('./friendshipRouter');
 const groupRouter = require('./groupRouter')
 const groupUsersRouter = require('./groupUsersRouter')
 const newsRouter = require('./newsRouter')
+const reportRouter = require('./reportRouter')
 
 
 router.use('/user', userRouter);
@@ -20,5 +21,6 @@ router.use('/friendship', friendshipRouter);
 router.use('/group', groupRouter);
 router.use('/groupUser', groupUsersRouter);
 router.use('/news', newsRouter);
+router.use('/report', reportRouter);
 
 module.exports = router;

@@ -96,6 +96,14 @@ const News = sequelize.define('news', {
     time_spent: {type: DataTypes.STRING}
 })
 
+const Reports = sequelize.define('reports', {
+    id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
+    user_id: {type: DataTypes.STRING},
+    report_type: {type: DataTypes.STRING},
+    reported_type: {type: DataTypes.STRING},
+    reported_id: {type: DataTypes.STRING}
+})
+
 module.exports = {
     Users, 
     Messages, 
@@ -107,5 +115,6 @@ module.exports = {
     GroupUsers,
     Comments,
     Likes,
-    News
+    News,
+    Reports
 }

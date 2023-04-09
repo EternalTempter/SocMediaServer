@@ -2,7 +2,7 @@ const uuid = require('uuid');
 const ApiError = require('../error/ApiError')
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const {Users} = require('../models/models')
+const {Users, Post, Messages, Comments, Friendship, GroupUsers, Group, Inbox, Reports, UserData, Likes} = require('../models/models')
 const { Op } = require("sequelize");
 
 const generateJwt = (id, email, role, unique_id, name, surname) => {
@@ -60,6 +60,17 @@ class UserController {
         }
         return res.json({unique_id: user.unique_id, name: user.name, surname: user.surname, email: user.email, role: user.role, id: user.id, createdAt: user.createdAt});
     }
+    async getById(req, res, next) {
+        const {id} = req.query;
+        if(!id) {
+            return next(ApiError.internal('Не указан параметр запроса')) 
+        }  
+        const user = await Users.findOne({where:{id: id}})
+        if(!user) {
+            return next(ApiError.internal('Пользователь не найден')) 
+        }
+        return res.json(user);
+    }
     async findAllByName(req, res, next) {
         const {queryParameter} = req.query;
         if(!queryParameter) {
@@ -92,6 +103,24 @@ class UserController {
         }
         const updatedUser = await Users.update({role}, {where: {email: user_id}})
         return res.json(updatedUser);
+    }
+    async deleteUserByEmail(req, res, next) {
+        const {email} = req.body;
+        if(!email) {
+            return next(ApiError.badRequest('Не задано обязательное поле'));
+        }
+        const user = await Users.destroy({where: {email: email}})
+        const posts = await Post.destroy({where: {post_handler_id: email}})
+        const comments = await Comments.destroy({where: {user_id: email}})
+        const friendShips = await Friendship.destroy({where: {[Op.or]: [{profile_from: email}, {profile_to: email}]}})
+        const groupUsers = await GroupUsers.destroy({where: {user_id: email}})
+        const groups = await Group.destroy({where: {owner_id: email}})
+        const inboxes = await Inbox.destroy({where: {inbox_holder_user_id: email}})
+        const likes = await Likes.destroy({where: {user_id: email}})
+        const messages = await Messages.destroy({where: {outgoing_id: email}})
+        const userData = await UserData.destroy({where: {user_id: email}})
+        const reports = await Reports.destroy({where: {user_id: email}})
+        return res.json(user);
     }
 }
 

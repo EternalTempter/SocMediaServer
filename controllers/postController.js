@@ -244,6 +244,22 @@ class PostController {
         const post = await Post.findOne({where: {id: id}})
         return res.json(post.comments_amount);
     }
+    async getCommentById(req, res, next) {
+        const {id} = req.query;
+        if(!id) {
+            return next(ApiError.badRequest('Не задано обязательное поле'));
+        }
+        const comment = await Comments.findAll({where: {id: id}})
+        return res.json(comment);
+    }
+    async getPostById(req, res, next) {
+        const {id} = req.query;
+        if(!id) {
+            return next(ApiError.badRequest('Не задано обязательное поле'));
+        }
+        const post = await Post.findAll({where: {id: id}})
+        return res.json(post);
+    }
     async deletePost(req, res, next) {
         const {id} = req.body;
         if(!id) {
@@ -251,6 +267,14 @@ class PostController {
         }
         const post = await Post.destroy({where: {id: id}})
         return res.json(post);
+    }
+    async deleteComment(req, res, next) {
+        const {id} = req.body;
+        if(!id) {
+            return next(ApiError.badRequest('Не задано обязательное поле'));
+        }
+        const comment = await Comments.destroy({where: {id: id}})
+        return res.json(comment);
     }
     async getAllPostsCount(req, res, next) {
         const post = await Post.count({where: {}});
