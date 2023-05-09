@@ -9,6 +9,9 @@ const Users = sequelize.define('user', {
     surname: {type: DataTypes.STRING},
     unique_id: {type: DataTypes.STRING, unique: true},
     role: {type: DataTypes.STRING, defaultValue: 'USER'},
+    is_activated: {type: DataTypes.BOOLEAN},
+    is_banned: {type: DataTypes.BOOLEAN},
+    activation_link: {type: DataTypes.STRING}
 });
 
 const Messages = sequelize.define('messages', {

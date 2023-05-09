@@ -18,8 +18,37 @@ class groupController {
         if(!group_name || !description || !type || !owner_id) {
             return next(ApiError.badRequest('Не задано одно из обязательных полей'));
         }
+
+        if(group_name.length > 40 || group_name.length < 2) {
+            return next(ApiError.badRequest('Наименование группы должно быть от 2 до 40 символов'));
+        }
+        if(description.length > 200 || description.length < 2) {
+            return next(ApiError.badRequest('Описание группы должно быть от 2 до 200 символов'));
+        }
+        if(type !== "Анекдоты" && type !== "Наука" && type !== "Новости" && type !== "Игры" && type !== "Другое") {
+            return next(ApiError.badRequest('Подобного типа групп не существует'));
+        }
+
+        if(req.decodedToken.email !== owner_id) {
+            return next(ApiError.badRequest('Ты чего тут удумал еблоид?'));
+        }
+
+        const groupsCount = await Group.findAndCountAll({where: {owner_id: owner_id}});
+        if(groupsCount.count > 3) {
+            return next(ApiError.badRequest('У пользователя не может быть больше трех групп'));
+        }
+
         try {
             const {image, panoramaImage} = req.files;
+            
+            if(image.size > 10485760) {
+                return next(ApiError.badRequest('Слишком большой размер картинки'));
+            }
+
+            if(panoramaImage.size > 10485760) {
+                return next(ApiError.badRequest('Слишком большой размер панорамной картинки'));
+            }
+
             let fileName = uuid.v4() + '.jpg';
             image.mv(path.resolve(__dirname, '..', 'static', fileName))
 
@@ -54,6 +83,9 @@ class groupController {
         const {id} = req.query;
         if(!id) {
             return next(ApiError.badRequest('Не задано обязательное поле'));
+        }
+        if(req.decodedToken.email !== id) {
+            return next(ApiError.badRequest('Ты чего тут удумал еблоид?'));
         }
         let {limit, page} = req.query;
         page = page || 1;
@@ -92,6 +124,12 @@ class groupController {
         if(!group_id) {
             return next(ApiError.badRequest('Не задано обязательное поле'));
         } 
+
+        const groupCheck = await Group.findOne({where: {id: group_id}});
+        if(groupCheck.owner_id !== req.decodedToken.email) {
+            return next(ApiError.badRequest('Ты чего тут удумал еблоид?'));
+        }
+
         const group = await Group.destroy({where: {id: group_id}});
         await GroupUsers.destroy({where: {group_id: group_id}})
         await Post.destroy({where: {post_handler_type: "GROUP", post_handler_id: group_id}})
@@ -102,6 +140,16 @@ class groupController {
         if(!description || !id) {
             return next(ApiError.badRequest('Не задано одно из обязательных полей'));
         }
+
+        if(description.length > 200 || description.length < 2) {
+            return next(ApiError.badRequest('Описание группы должно быть от 2 до 200 символов'));
+        }
+
+        const groupCheck = await Group.findOne({where: {id: id}});
+        if(groupCheck.owner_id !== req.decodedToken.email) {
+            return next(ApiError.badRequest('Ты чего тут удумал еблоид?'));
+        }
+
         const updatedRow = await Group.update({description}, {where: { id: id }});
         return res.json(updatedRow)
     }
@@ -110,6 +158,16 @@ class groupController {
         if(!group_name || !id) {
             return next(ApiError.badRequest('Не задано одно из обязательных полей'));
         }
+
+        if(group_name.length > 40 || group_name.length < 2) {
+            return next(ApiError.badRequest('Наименование группы должно быть от 2 до 40 символов'));
+        }
+
+        const groupCheck = await Group.findOne({where: {id: id}});
+        if(groupCheck.owner_id !== req.decodedToken.email) {
+            return next(ApiError.badRequest('Ты чего тут удумал еблоид?'));
+        }
+
         const updatedRow = await Group.update({group_name}, {where: { id: id }});
         return res.json(updatedRow)
     }
@@ -118,6 +176,16 @@ class groupController {
         if(!type || !id) {
             return next(ApiError.badRequest('Не задано одно из обязательных полей'));
         }
+        
+        if(type !== "Анекдоты" && type !== "Наука" && type !== "Новости" && type !== "Игры" && type !== "Другое") {
+            return next(ApiError.badRequest('Подобного типа групп не существует'));
+        }
+
+        const groupCheck = await Group.findOne({where: {id: id}});
+        if(groupCheck.owner_id !== req.decodedToken.email) {
+            return next(ApiError.badRequest('Ты чего тут удумал еблоид?'));
+        }
+
         const updatedRow = await Group.update({type}, {where: { id: id }});
         return res.json(updatedRow)
     }
@@ -126,8 +194,17 @@ class groupController {
         if(!id) {
             return next(ApiError.badRequest('Не задано обязательное поле'));
         }
+        
+        const groupCheck = await Group.findOne({where: {id: id}});
+        if(groupCheck.owner_id !== req.decodedToken.email) {
+            return next(ApiError.badRequest('Ты чего тут удумал еблоид?'));
+        }
+
         try {
             const {img} = req.files;
+            if(img.size > 10485760) {
+                return next(ApiError.badRequest('Слишком большой размер картинки'));
+            }
             let fileName = uuid.v4() + '.jpg';
             img.mv(path.resolve(__dirname, '..', 'static', fileName))
             const updatedRow = await Group.update({image: fileName}, {where: { id: id }});
@@ -142,8 +219,17 @@ class groupController {
         if(!id) {
             return next(ApiError.badRequest('Не задано обязательное поле'));
         }
+        
+        const groupCheck = await Group.findOne({where: {id: id}});
+        if(groupCheck.owner_id !== req.decodedToken.email) {
+            return next(ApiError.badRequest('Ты чего тут удумал еблоид?'));
+        }
+        
         try {
             const {img} = req.files;
+            if(img.size > 10485760) {
+                return next(ApiError.badRequest('Слишком большой размер картинки'));
+            }
             let fileName = uuid.v4() + '.jpg';
             img.mv(path.resolve(__dirname, '..', 'static', fileName))
             const updatedRow = await Group.update({panoramaImage: fileName}, {where: { id: id }});

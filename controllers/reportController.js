@@ -12,6 +12,15 @@ class ReportController {
         if(!user_id || !report_type || !reported_type || !reported_id) {
             return next(ApiError.badRequest('Не задано одно из обязательных полей'));
         }
+
+        if(report_type !== "scam" && report_type !== "spam" && report_type !== "prohibitedGoods" && report_type !== "fuelingConflict") {
+            return next(ApiError.badRequest('Такого типа не существует'));
+        }
+
+        if(user_id !== req.decodedToken.email) {
+            return next(ApiError.badRequest('Ты чего тут удумал еблоид?'));
+        }
+
         const report = await Reports.create({user_id, report_type, reported_type, reported_id});
         return res.json(report)
     }
@@ -20,6 +29,11 @@ class ReportController {
         if(!id) {
             return next(ApiError.badRequest('Не задано одно из обязательных полей'));
         }
+
+        if(req.decodedToken.email !== "OWNER") {
+            return next(ApiError.badRequest('Ты чего тут удумал еблоид?'));
+        }
+
         const updatedRows = await Reports.destroy({where: { id: id }});
         return res.json(updatedRows)
     }

@@ -11,7 +11,6 @@ const groupUsersRouter = require('./groupUsersRouter')
 const newsRouter = require('./newsRouter')
 const reportRouter = require('./reportRouter')
 
-
 router.use('/user', userRouter);
 router.use('/messages', messagesRouter);
 router.use('/inbox', inboxRouter);

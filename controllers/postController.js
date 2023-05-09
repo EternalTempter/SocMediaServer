@@ -3,6 +3,7 @@ const ApiError = require('../error/ApiError')
 const { Op } = require("sequelize")
 const uuid = require("uuid");
 const path = require("path");
+const jwt = require('jsonwebtoken');
 
 class PostController {
     async create(req, res, next) {
@@ -10,8 +11,22 @@ class PostController {
         if(!post_handler_type || !post_handler_id || !description) {
             return next(ApiError.badRequest('Не задано одно из обязательных полей'));
         }
+
+        if(post_handler_id !== req.decodedToken.email) {
+            return next(ApiError.badRequest('Ты чего тут удумал еблоид?'));
+        }
+
+        if(description.length > 200 || description.length < 2) {
+            return next(ApiError.badRequest('Описание должно быть от 2 до 200 символов'));
+        }
+
         try {
             const {img} = req.files;
+
+            if(img.size > 10485760) {
+                return next(ApiError.badRequest('Слишком большой размер картинки'));
+            }
+
             let fileName = uuid.v4() + '.jpg';
             img.mv(path.resolve(__dirname, '..', 'static', fileName))
             const post = await Post.create({
@@ -53,6 +68,11 @@ class PostController {
         if(!id || !friendsArray) {
             return next(ApiError.badRequest('Не задано одно из обязательных полей'));
         }
+
+        if(id !== req.decodedToken.email) {
+            return next(ApiError.badRequest('Ты чего тут удумал еблоид?'));
+        }
+
         let {limit, page} = req.query;
         page = page || 1;
         limit = limit || 5;
@@ -65,6 +85,11 @@ class PostController {
         if(!id) {
             return next(ApiError.badRequest('Не задано обязательное поле'));
         }
+        
+        if(id !== req.decodedToken.email) {
+            return next(ApiError.badRequest('Ты чего тут удумал еблоид?'));
+        }
+
         const likes = await Likes.findAll({where: {user_id: id, type: 'POST_LIKE'}})
         return res.json(likes)
     }
@@ -73,6 +98,11 @@ class PostController {
         if(!id || !likesArray) {
             return next(ApiError.badRequest('Не задано одно из обязательных полей'));
         }
+        
+        if(id !== req.decodedToken.email) {
+            return next(ApiError.badRequest('Ты чего тут удумал еблоид?'));
+        }
+
         let {limit, page} = req.query;
         page = page || 1;
         limit = limit || 5;
@@ -85,6 +115,11 @@ class PostController {
         if(!id || !user_id) {
             return next(ApiError.badRequest('Не задано одно из обязательных полей'));
         }
+        
+        if(user_id !== req.decodedToken.email) {
+            return next(ApiError.badRequest('Ты чего тут удумал еблоид?'));
+        }
+
         const updatedLikes = await Post.increment({likes_amount: 1}, {where: {id: id}})
         await Likes.create({post_id: id, user_id: user_id, type: 'POST_LIKE'})
         return res.json(updatedLikes)
@@ -94,6 +129,11 @@ class PostController {
         if(!id || !user_id || !type) {
             return next(ApiError.badRequest('Не задано одно из обязательных полей'));
         }
+                
+        if(user_id !== req.decodedToken.email) {
+            return next(ApiError.badRequest('Ты чего тут удумал еблоид?'));
+        }
+
         const updatedLikes = await Post.decrement({likes_amount: 1}, {where: {id: id}})
         await Likes.destroy({where: {post_id: id, user_id: user_id, type: type}})
         return res.json(updatedLikes)
@@ -111,6 +151,15 @@ class PostController {
         if(!post_id || !user_id || !comment) {
             return next(ApiError.badRequest('Не задано одно из обязательных полей'));
         }
+ 
+        if(comment.length > 400 || comment.length <= 0) {
+            return next(ApiError.badRequest('Коммент должен быть не более 400 символов'));
+        }
+                
+        if(user_id !== req.decodedToken.email) {
+            return next(ApiError.badRequest('Ты чего тут удумал еблоид?'));
+        }
+
         const createdComment = await Comments.create({post_id: post_id, user_id: user_id, comment: comment, likes_amount: 0})
         await Post.increment({comments_amount: 1}, {where: {id: post_id}})
         return res.json(createdComment) 
@@ -120,6 +169,11 @@ class PostController {
         if(!id || !user_id) {
             return next(ApiError.badRequest('Не задано одно из обязательных полей'));
         }
+                
+        if(user_id !== req.decodedToken.email) {
+            return next(ApiError.badRequest('Ты чего тут удумал еблоид?'));
+        }
+
         const updatedComment = await Comments.increment({likes_amount: 1}, {where: {id: id}})
         await Likes.create({post_id: id, user_id: user_id, type: 'COMMENT_LIKE'})
         return res.json(updatedComment) 
@@ -129,6 +183,11 @@ class PostController {
         if(!id || !user_id || !type) {
             return next(ApiError.badRequest('Не задано одно из обязательных полей'));
         }
+                
+        if(user_id !== req.decodedToken.email) {
+            return next(ApiError.badRequest('Ты чего тут удумал еблоид?'));
+        }
+
         const updatedComment = await Comments.decrement({likes_amount: 1}, {where: {id: id}})
         await Likes.destroy({where: {post_id: id, user_id: user_id, type: type}})
         return res.json(updatedComment) 
@@ -216,6 +275,11 @@ class PostController {
         if(!user_id) {
             return next(ApiError.badRequest('Не задано обязательное поле'));
         }
+                
+        if(user_id !== req.decodedToken.email) {
+            return next(ApiError.badRequest('Ты чего тут удумал еблоид?'));
+        }
+
         const likesCount = await Likes.count({where: {user_id: user_id}});
         return res.json(likesCount);
     }
@@ -265,6 +329,12 @@ class PostController {
         if(!id) {
             return next(ApiError.badRequest('Не задано обязательное поле'));
         }
+
+        const checkPost = await Post.findOne({where: {id: id}}) 
+        if(checkPost.post_handler_id !== req.decodedToken.email) {
+            return next(ApiError.badRequest('Ты чего тут удумал еблоид?'));
+        }
+
         const post = await Post.destroy({where: {id: id}})
         return res.json(post);
     }
@@ -273,6 +343,12 @@ class PostController {
         if(!id) {
             return next(ApiError.badRequest('Не задано обязательное поле'));
         }
+
+        const checkComment = await Comments.findOne({where: {id: id}}) 
+        if(checkComment.user_id !== req.decodedToken.email) {
+            return next(ApiError.badRequest('Ты чего тут удумал еблоид?'));
+        }
+
         const comment = await Comments.destroy({where: {id: id}})
         return res.json(comment);
     }

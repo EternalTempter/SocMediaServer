@@ -17,6 +17,9 @@ class groupUsersController {
         if(!group_id || !id) {
             return next(ApiError.badRequest('Не задано одно из обязательных полей'));
         }
+        if(req.decodedToken.email !== id) {
+            return next(ApiError.badRequest('Ты чего тут удумал еблоид?'));
+        }
         const group = await GroupUsers.create({group_id: group_id, user_id: id});
         return res.json(group);
     }
@@ -24,6 +27,9 @@ class groupUsersController {
         const {id, group_id} = req.body;
         if(!group_id || !id) {
             return next(ApiError.badRequest('Не задано одно из обязательных полей'));
+        }
+        if(req.decodedToken.email !== id) {
+            return next(ApiError.badRequest('Ты чего тут удумал еблоид?'));
         }
         const group = await GroupUsers.destroy({where: {group_id: group_id, user_id: id}});
         return res.json(group);

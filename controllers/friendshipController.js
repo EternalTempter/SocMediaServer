@@ -8,6 +8,9 @@ class FriendshipController {
         if(!id) {
             return next(ApiError.badRequest('Не задано обязательное поле'));
         }
+        if(req.decodedToken.email !== id) {
+            return next(ApiError.badRequest('Ты чего тут удумал еблоид?'));
+        }
         let {limit, page} = req.query;
         limit = limit || 10;
         page = page || 1;
@@ -19,6 +22,9 @@ class FriendshipController {
         const {id} = req.query;
         if(!id) {
             return next(ApiError.badRequest('Не задано обязательное поле'));
+        }
+        if(req.decodedToken.email !== id) {
+            return next(ApiError.badRequest('Ты чего тут удумал еблоид?'));
         }
         const friends = await Friendship.findAll({
             where: {
@@ -34,6 +40,9 @@ class FriendshipController {
         if(!id) {
             return next(ApiError.badRequest('Не задано обязательное поле'));
         }
+        if(req.decodedToken.email !== id) {
+            return next(ApiError.badRequest('Ты чего тут удумал еблоид?'));
+        }
         const friends = await Friendship.findAll({where: {[Op.and]: [{profile_to: id}, {status: 'REJECTED'}]}})
         return res.json(friends);
     }
@@ -41,6 +50,9 @@ class FriendshipController {
         const {profile_from, profile_to} = req.body;
         if(!profile_from || !profile_to) {
             return next(ApiError.badRequest('Не задано одно из обязательных полей'));
+        }
+        if(req.decodedToken.email !== profile_from) {
+            return next(ApiError.badRequest('Ты чего тут удумал еблоид?'));
         }
         const friendRequest = await Friendship.create({profile_from, profile_to, status: 'PENDING'}) 
         return res.json(friendRequest);
@@ -50,6 +62,9 @@ class FriendshipController {
         if(!profile_from || !profile_to) {
             return next(ApiError.badRequest('Не задано одно из обязательных полей'));
         }
+        if(req.decodedToken.email !== profile_to) {
+            return next(ApiError.badRequest('Ты чего тут удумал еблоид?'));
+        }
         const friendRequest = await Friendship.update({status: 'ACCEPTED'}, {where: {[Op.and]: [{profile_from}, {profile_to}]}}) 
         return res.json(friendRequest);
     }
@@ -57,6 +72,9 @@ class FriendshipController {
         const {profile_from, profile_to} = req.body;
         if(!profile_from || !profile_to) {
             return next(ApiError.badRequest('Не задано одно из обязательных полей'));
+        }
+        if(req.decodedToken.email !== profile_to) {
+            return next(ApiError.badRequest('Ты чего тут удумал еблоид?'));
         }
         const friendRequest = await Friendship.update({status: 'REJECTED'}, {where: {[Op.and]: [{profile_from}, {profile_to}]}}) 
         return res.json(friendRequest);
@@ -66,6 +84,9 @@ class FriendshipController {
         if(!profile_from || !profile_to) {
             return next(ApiError.badRequest('Не задано одно из обязательных полей'));
         }
+        if(req.decodedToken.email !== profile_from && req.decodedToken.email !== profile_to) {
+            return next(ApiError.badRequest('Ты чего тут удумал еблоид?'));
+        }
         const friendRequest = await Friendship.destroy({where: {[Op.or]: [{profile_from: profile_from, profile_to: profile_to, status: 'ACCEPTED'}, {profile_from: profile_to, profile_to: profile_from, status: 'ACCEPTED'}]}}) 
         return res.json(friendRequest);
     }
@@ -73,6 +94,9 @@ class FriendshipController {
         const {profile_from, profile_to} = req.body;
         if(!profile_from || !profile_to) {
             return next(ApiError.badRequest('Не задано одно из обязательных полей'));
+        }
+        if(req.decodedToken.email !== profile_from) {
+            return next(ApiError.badRequest('Ты чего тут удумал еблоид?'));
         }
         const friendRequest = await Friendship.destroy({where: {[Op.and]: [{profile_from}, {profile_to}, {[Op.or]: [{status: 'PENDING'}, {status: 'REJECTED'}]}]}}) 
         return res.json(friendRequest);
