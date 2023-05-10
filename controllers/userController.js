@@ -46,7 +46,7 @@ class UserController {
         // const user = await Users.create({email, role: "USER", password: hashPassword, unique_id: userUniqueId, name, surname, is_activated: false, activation_link: activationLink, is_banned: false})
 
         try {
-            const transporter = nodemailer.createTransport({
+            const transporter = await nodemailer.createTransport({
                 service: "gmail",
                 host: process.env.SMTP_HOST,
                 port: process.env.SMTP_PORT,
@@ -72,7 +72,7 @@ class UserController {
                         </div>
                     `
             }
-            transporter.sendMail(mailOptions, function(error, info){
+            await transporter.sendMail(mailOptions, function(error, info){
                 if(error){
                    console.log(error);
                 }else{
