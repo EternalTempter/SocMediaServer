@@ -46,7 +46,7 @@ class UserController {
         // const user = await Users.create({email, role: "USER", password: hashPassword, unique_id: userUniqueId, name, surname, is_activated: false, activation_link: activationLink, is_banned: false})
 
         try {
-            const transporter = await nodemailer.createTransport({
+            const transporter = nodemailer.createTransport({
                 service: "gmail",
                 host: process.env.SMTP_HOST,
                 port: process.env.SMTP_PORT,
@@ -72,13 +72,18 @@ class UserController {
                         </div>
                     `
             }
-            await transporter.sendMail(mailOptions, function(error, info){
-                if(error){
-                   console.log(error);
-                }else{
-                   console.log("Email sent: " + info.response);
-                }
-             });
+            const success = await new Promise((resolve, reject) => {
+                transporter.sendMail(mailOptions, function(error, info){
+                    if(error){
+                       console.log(error);
+                    }else{
+                       console.log("Email sent: " + info.response);
+                    }
+                });
+            })
+            if (!success) {
+                res.status(500).json({ error: 'Error sending email' })
+            }
         }
         catch(e) {
             res.json({message: `problem with send mail ${e.message}`})
