@@ -45,92 +45,86 @@ class UserController {
         
         // const user = await Users.create({email, role: "USER", password: hashPassword, unique_id: userUniqueId, name, surname, is_activated: false, activation_link: activationLink, is_banned: false})
 
-        const transporter = nodemailer.createTransport({
-            port: process.env.SMTP_PORT,
-            host: process.env.SMTP_HOST,
-            auth: {
-                user: process.env.SMTP_USER,
-                pass: process.env.SMTP_PASSWORD
-            },
-            secure: true
-        });
+        // const transporter = nodemailer.createTransport({
+        //     port: process.env.SMTP_PORT,
+        //     host: process.env.SMTP_HOST,
+        //     auth: {
+        //         user: process.env.SMTP_USER,
+        //         pass: process.env.SMTP_PASSWORD
+        //     },
+        //     secure: true
+        // });
         
-        await new Promise((resolve, reject) => {
-            transporter.verify(function (error, success) {
-                if (error) {
-                    console.log(error);
-                    reject(error);
-                } else {
-                    console.log("Server is ready to take our messages");
-                    resolve(success);
-                }
-            });
-        });
+        // await new Promise((resolve, reject) => {
+        //     transporter.verify(function (error, success) {
+        //         if (error) {
+        //             console.log(error);
+        //             reject(error);
+        //         } else {
+        //             console.log("Server is ready to take our messages");
+        //             resolve(success);
+        //         }
+        //     });
+        // });
         
-        const mailData = {
-            from: process.env.SMTP_USER,
-            to: email,
-            subject: 'Активация аккаунта',
-            text: '',
-            html: 
-                `
-                    <div>
-                        <h1>Для активации перейдите по ссылке</h1>
-                        <a href="${process.env.API_URL}api/user/activate/${activationLink}">${process.env.API_URL}api/user/activate/${activationLink}</a>
-                    </div>
-                `
-        };
+        // const mailData = {
+        //     from: process.env.SMTP_USER,
+        //     to: email,
+        //     subject: 'Активация аккаунта',
+        //     text: '',
+        //     html: 
+        //         `
+        //             <div>
+        //                 <h1>Для активации перейдите по ссылке</h1>
+        //                 <a href="${process.env.API_URL}api/user/activate/${activationLink}">${process.env.API_URL}api/user/activate/${activationLink}</a>
+        //             </div>
+        //         `
+        // };
         
-        await new Promise((resolve, reject) => {
-            transporter.sendMail(mailData, (err, info) => {
-                if (err) {
-                    console.error(err);
-                    reject(err);
-                } else {
-                    console.log(info);
-                    resolve(info);
-                }
-            });
-        });
+        // await new Promise((resolve, reject) => {
+        //     transporter.sendMail(mailData, (err, info) => {
+        //         if (err) {
+        //             console.error(err);
+        //             reject(err);
+        //         } else {
+        //             console.log(info);
+        //             resolve(info);
+        //         }
+        //     });
+        // });
 
-        // try {
-        //     const transporter = nodemailer.createTransport({
-        //         service: "gmail",
-        //         host: process.env.SMTP_HOST,
-        //         port: process.env.SMTP_PORT,
-        //         secure: false,
-        //         auth: {
-        //             user: process.env.SMTP_USER,
-        //             pass: process.env.SMTP_PASSWORD
-        //         },
-        //         tls: {
-        //             rejectUnauthorized: false
-        //         }
-        //     })
-        //     const mailOptions = {
-        //         from: process.env.SMTP_USER,
-        //         to: email,
-        //         subject: 'Активация аккаунта',
-        //         text: '',
-        //         html: 
-        //             `
-        //                 <div>
-        //                     <h1>Для активации перейдите по ссылке</h1>
-        //                     <a href="${process.env.API_URL}api/user/activate/${activationLink}">${process.env.API_URL}api/user/activate/${activationLink}</a>
-        //                 </div>
-        //             `
-        //     }
-        //     transporter.sendMail(mailOptions, function(error, info){
-        //         if(error){
-        //            console.log(error);
-        //         }else{
-        //            console.log("Email sent: " + info.response);
-        //         }
-        //      });
-        // }
-        // catch(e) {
-        //     res.json({message: `problem with send mail ${e.message}`})
-        // }
+        try {
+            const transporter = nodemailer.createTransport({
+                service: "gmail",
+                host: process.env.SMTP_HOST,
+                port: process.env.SMTP_PORT,
+                secure: false,
+                auth: {
+                    user: process.env.SMTP_USER,
+                    pass: process.env.SMTP_PASSWORD
+                },
+                tls: {
+                    rejectUnauthorized: false
+                }
+            })
+            const mailOptions = {
+                from: process.env.SMTP_USER,
+                to: email,
+                subject: 'Активация аккаунта',
+                text: '',
+                html: 
+                    `
+                        <div>
+                            <h1>Для активации перейдите по ссылке</h1>
+                            <a href="${process.env.API_URL}api/user/activate/${activationLink}">${process.env.API_URL}api/user/activate/${activationLink}</a>
+                        </div>
+                    `
+            }
+            await transporter.sendMail(mailOptions);
+        }
+        catch(e) {
+            res.json({message: `problem with send mail ${e.message}`})
+        }
         return res.json({message: "success"})
         // const token = generateJwt(user.id, user.email, user.role, user.unique_id, user.name, user.surname, user.is_activated, user.is_banned);
         // return res.json({token})
