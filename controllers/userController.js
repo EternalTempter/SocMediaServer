@@ -81,9 +81,9 @@ class UserController {
                 `
         };
         
-        await new Promise((resolve, reject) => {
-            transporter.sendMail(mailData);
-        });
+        
+        await transporter.sendMail(mailData);
+        
 
         // try {
         //     const transporter = nodemailer.createTransport({
