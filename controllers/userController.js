@@ -43,46 +43,49 @@ class UserController {
         const userUniqueId = uuid.v4();
         const activationLink = uuid.v4();
         
-        const user = await Users.create({email, role: "USER", password: hashPassword, unique_id: userUniqueId, name, surname, is_activated: false, activation_link: activationLink, is_banned: false})
+        // const user = await Users.create({email, role: "USER", password: hashPassword, unique_id: userUniqueId, name, surname, is_activated: false, activation_link: activationLink, is_banned: false})
 
-        const transporter = nodemailer.createTransport({
-            service: "gmail",
-            host: process.env.SMTP_HOST,
-            port: process.env.SMTP_PORT,
-            secure: false,
-            auth: {
-                user: process.env.SMTP_USER,
-                pass: process.env.SMTP_PASSWORD
-            },
-            tls: {
-                rejectUnauthorized: false
+        try {
+            const transporter = nodemailer.createTransport({
+                service: "gmail",
+                host: process.env.SMTP_HOST,
+                port: process.env.SMTP_PORT,
+                secure: false,
+                auth: {
+                    user: process.env.SMTP_USER,
+                    pass: process.env.SMTP_PASSWORD
+                },
+                tls: {
+                    rejectUnauthorized: false
+                }
+            })
+            const mailOptions = {
+                from: process.env.SMTP_USER,
+                to: email,
+                subject: 'Активация аккаунта',
+                text: '',
+                html: 
+                    `
+                        <div>
+                            <h1>Для активации перейдите по ссылке</h1>
+                            <a href="${process.env.API_URL}api/user/activate/${activationLink}">${process.env.API_URL}api/user/activate/${activationLink}</a>
+                        </div>
+                    `
             }
-        })
-        
-        const mailOptions = {
-            from: process.env.SMTP_USER,
-            to: email,
-            subject: 'Активация аккаунта',
-            text: '',
-            html: 
-                `
-                    <div>
-                        <h1>Для активации перейдите по ссылке</h1>
-                        <a href="${process.env.API_URL}api/user/activate/${activationLink}">${process.env.API_URL}api/user/activate/${activationLink}</a>
-                    </div>
-                `
+            transporter.sendMail(mailOptions, function(error, info){
+                if(error){
+                   console.log(error);
+                }else{
+                   console.log("Email sent: " + info.response);
+                }
+             });
         }
-
-        transporter.sendMail(mailOptions, function(error, info){
-            if(error){
-               console.log(error);
-            }else{
-               console.log("Email sent: " + info.response);
-            }
-         });
-
-        const token = generateJwt(user.id, user.email, user.role, user.unique_id, user.name, user.surname, user.is_activated, user.is_banned);
-        return res.json({token})
+        catch(e) {
+            res.json({message: `problem with send mail ${e.message}`})
+        }
+        return res.json({message: "success"})
+        // const token = generateJwt(user.id, user.email, user.role, user.unique_id, user.name, user.surname, user.is_activated, user.is_banned);
+        // return res.json({token})
     }
     async activate(req, res, next) {
         try {
