@@ -4,7 +4,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const {Users, Post, Messages, Comments, Friendship, GroupUsers, Group, Inbox, Reports, UserData, Likes} = require('../models/models')
 const { Op } = require("sequelize");
-const nodemailer = require("nodemailer");
+// const nodemailer = require("nodemailer");
 
 const generateJwt = (id, email, role, unique_id, name, surname, is_activated, is_banned) => {
     return jwt.sign(
@@ -41,100 +41,63 @@ class UserController {
         const hashPassword = await bcrypt.hash(password, 5)
 
         const userUniqueId = uuid.v4();
-        const activationLink = uuid.v4();
+        // const activationLink = uuid.v4();
         
-        // const user = await Users.create({email, role: "USER", password: hashPassword, unique_id: userUniqueId, name, surname, is_activated: false, activation_link: activationLink, is_banned: false})
+        const user = await Users.create({email, role: "USER", password: hashPassword, unique_id: userUniqueId, name, surname, is_activated: true, activation_link: 'activationLink', is_banned: false})
 
-        const transporter = nodemailer.createTransport({
-            port: process.env.SMTP_PORT,
-            host: process.env.SMTP_HOST,
-            auth: {
-                user: process.env.SMTP_USER,
-                pass: process.env.SMTP_PASSWORD
-            },
-            secure: true
-        });
-        
-        // await new Promise((resolve, reject) => {
-        //     transporter.verify(function (error, success) {
-        //         if (error) {
-        //             console.log(error);
-        //             reject(error);
-        //         } else {
-        //             console.log("Server is ready to take our messages");
-        //             resolve(success);
-        //         }
-        //     });
-        // });
-        
-        const mailData = {
-            from: process.env.SMTP_USER,
-            to: email,
-            subject: 'Активация аккаунта',
-            text: '',
-            html: 
-                `
-                    <div>
-                        <h1>Для активации перейдите по ссылке</h1>
-                        <a href="${process.env.API_URL}api/user/activate/${activationLink}">${process.env.API_URL}api/user/activate/${activationLink}</a>
-                    </div>
-                `
-        };
-        
-        
-        await transporter.sendMail(mailData);
-        
-
-        // try {
-        //     const transporter = nodemailer.createTransport({
-        //         service: "gmail",
-        //         host: process.env.SMTP_HOST,
-        //         port: process.env.SMTP_PORT,
-        //         secure: false,
-        //         auth: {
-        //             user: process.env.SMTP_USER,
-        //             pass: process.env.SMTP_PASSWORD
-        //         },
-        //         tls: {
-        //             rejectUnauthorized: false
-        //         }
-        //     })
-        //     const mailOptions = {
-        //         from: process.env.SMTP_USER,
-        //         to: email,
-        //         subject: 'Активация аккаунта',
-        //         text: '',
-        //         html: 
-        //             `
-        //                 <div>
-        //                     <h1>Для активации перейдите по ссылке</h1>
-        //                     <a href="${process.env.API_URL}api/user/activate/${activationLink}">${process.env.API_URL}api/user/activate/${activationLink}</a>
-        //                 </div>
-        //             `
+        // const transporter = nodemailer.createTransport({
+        //     service: "gmail",
+        //     host: process.env.SMTP_HOST,
+        //     port: process.env.SMTP_PORT,
+        //     secure: false,
+        //     auth: {
+        //         user: process.env.SMTP_USER,
+        //         pass: process.env.SMTP_PASSWORD
+        //     },
+        //     tls: {
+        //         rejectUnauthorized: false
         //     }
-        //     await transporter.sendMail(mailOptions);
+        // })
+        
+        // const mailOptions = {
+        //     from: process.env.SMTP_USER,
+        //     to: email,
+        //     subject: 'Активация аккаунта',
+        //     text: '',
+        //     html: 
+        //         `
+        //             <div>
+        //                 <h1>Для активации перейдите по ссылке</h1>
+        //                 <a href="${process.env.API_URL}api/user/activate/${activationLink}">${process.env.API_URL}api/user/activate/${activationLink}</a>
+        //             </div>
+        //         `
         // }
-        // catch(e) {
-        //     res.json({message: `problem with send mail ${e.message}`})
-        // }
-        return res.json({message: "success"})
-        // const token = generateJwt(user.id, user.email, user.role, user.unique_id, user.name, user.surname, user.is_activated, user.is_banned);
-        // return res.json({token})
+
+        // transporter.sendMail(mailOptions, function(error, info){
+        //     if(error){
+        //        console.log(error);
+        //     }else{
+        //        console.log("Email sent: " + info.response);
+        //     }
+        //  });
+
+        const token = generateJwt(user.id, user.email, user.role, user.unique_id, user.name, user.surname, user.is_activated, user.is_banned);
+        return res.json({token})
     }
-    async activate(req, res, next) {
-        try {
-            const activationLink = req.params.link;
-            const user = await Users.findOne({where: { activation_link: activationLink }})
-            if(!user) {
-                return next(ApiError.internal('Некорректная ссылка активации')) 
-            }
-            await Users.update({is_activated: true}, {where: { activation_link: activationLink }})
-            return res.redirect(`${process.env.CLIENT_URL}account/${user.email}`)
-        }
-        catch (e){
-            return next(ApiError.badRequest('Произошла ошибка при активации аккаунта')) 
-        }
-    }
+    // async activate(req, res, next) {
+    //     try {
+    //         const activationLink = req.params.link;
+    //         const user = await Users.findOne({where: { activation_link: activationLink }})
+    //         if(!user) {
+    //             return next(ApiError.internal('Некорректная ссылка активации')) 
+    //         }
+    //         await Users.update({is_activated: true}, {where: { activation_link: activationLink }})
+    //         return res.redirect(`${process.env.CLIENT_URL}account/${user.email}`)
+    //     }
+    //     catch (e){
+    //         return next(ApiError.badRequest('Произошла ошибка при активации аккаунта')) 
+    //     }
+    // }
     async login(req, res, next) {
         const {email, password} = req.body
         if(!email || !password) {
@@ -151,19 +114,19 @@ class UserController {
         const token = generateJwt(user.id, user.email, user.role, user.unique_id, user.name, user.surname, user.is_activated, user.is_banned)
         return res.json({token})
     } 
-    async checkIsActivated(req, res, next) {
-        const {email} = req.query;
-        if(!email) {
-            return next(ApiError.badRequest('Не задано обязательное поле'))
-        }
-        const user = await Users.findOne({where: {email: email}});
+    // async checkIsActivated(req, res, next) {
+    //     const {email} = req.query;
+    //     if(!email) {
+    //         return next(ApiError.badRequest('Не задано обязательное поле'))
+    //     }
+    //     const user = await Users.findOne({where: {email: email}});
 
-        if(user.is_activated) {
-            const token = generateJwt(user.id, user.email, user.role, user.unique_id, user.name, user.surname, user.is_activated, user.is_banned)
-            return res.json({token: token})
-        }
-        else return res.json(false)
-    }
+    //     if(user.is_activated) {
+    //         const token = generateJwt(user.id, user.email, user.role, user.unique_id, user.name, user.surname, user.is_activated, user.is_banned)
+    //         return res.json({token: token})
+    //     }
+    //     else return res.json(false)
+    // }
     async check(req, res, next) {
         const token = generateJwt(req.user.id, req.user.email, req.user.role, req.unique_id, req.name, req.surname)
         return res.json({token})    
